@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use tokio::sync::mpsc;
+use tokio::sync::{mpsc, watch};
 
 use crate::ffmpeg::command::FfmpegCommand;
 use crate::ffmpeg::locator::FfmpegLocator;
@@ -32,13 +32,30 @@ pub struct JobProgressInfo {
 
 pub struct JobExecutor {
     locator: Arc<FfmpegLocator>,
+    cancel_tx: watch::Sender<Option<String>>,
+    cancel_rx: watch::Receiver<Option<String>>,
 }
 
 impl JobExecutor {
     pub fn new(locator: FfmpegLocator) -> Self {
+        let (cancel_tx, cancel_rx) = watch::channel(None);
         Self {
             locator: Arc::new(locator),
+            cancel_tx,
+            cancel_rx,
         }
+    }
+
+    pub fn cancel_sender(&self) -> watch::Sender<Option<String>> {
+        self.cancel_tx.clone()
+    }
+
+    pub fn request_cancel(&self) {
+        let _ = self.cancel_tx.send(Some("cancel".to_string()));
+    }
+
+    pub fn reset_cancel(&self) {
+        let _ = self.cancel_tx.send(None);
     }
 
     pub async fn execute(
@@ -46,6 +63,8 @@ impl JobExecutor {
         job: &mut Job,
         event_tx: &mpsc::UnboundedSender<JobEvent>,
     ) -> Result<(), MediaError> {
+        self.reset_cancel();
+
         event_tx
             .send(JobEvent::Started(job.id.clone()))
             .map_err(|e| MediaError::Other(e.to_string()))?;
@@ -68,6 +87,12 @@ impl JobExecutor {
                     .send(JobEvent::Completed(job.id.clone()))
                     .map_err(|e| MediaError::Other(e.to_string()))?;
             }
+            Err(MediaError::Cancelled) => {
+                job.status = JobStatus::Cancelled;
+                event_tx
+                    .send(JobEvent::Cancelled(job.id.clone()))
+                    .map_err(|e| MediaError::Other(e.to_string()))?;
+            }
             Err(e) => {
                 let msg = e.to_string();
                 job.status = JobStatus::Failed(msg.clone());
@@ -79,6 +104,10 @@ impl JobExecutor {
         }
 
         Ok(())
+    }
+
+    fn is_cancelled(&self) -> bool {
+        self.cancel_rx.borrow().is_some()
     }
 
     async fn execute_convert(
@@ -101,9 +130,13 @@ impl JobExecutor {
         let mut process = FfmpegProcess::spawn(&cmd).await?;
         let id = job_id.clone();
         let tx = event_tx.clone();
+        let cancel = self.cancel_rx.clone();
 
         let state = process
             .wait_with_progress(|p: &FfmpegProgress| {
+                if *cancel.borrow() == Some("cancel".to_string()) {
+                    return;
+                }
                 let info = JobProgressInfo {
                     percentage: None,
                     fps: p.fps,
@@ -113,6 +146,11 @@ impl JobExecutor {
                 let _ = tx.send(JobEvent::Progress(id.clone(), info));
             })
             .await?;
+
+        if self.is_cancelled() {
+            process.cancel().await?;
+            return Err(MediaError::Cancelled);
+        }
 
         match state {
             crate::ffmpeg::process::ProcessState::Completed => Ok(()),
@@ -145,9 +183,13 @@ impl JobExecutor {
         let mut process = FfmpegProcess::spawn(&cmd).await?;
         let id = job_id.clone();
         let tx = event_tx.clone();
+        let cancel = self.cancel_rx.clone();
 
         let state = process
             .wait_with_progress(|p: &FfmpegProgress| {
+                if *cancel.borrow() == Some("cancel".to_string()) {
+                    return;
+                }
                 let info = JobProgressInfo {
                     percentage: None,
                     fps: p.fps,
@@ -157,6 +199,11 @@ impl JobExecutor {
                 let _ = tx.send(JobEvent::Progress(id.clone(), info));
             })
             .await?;
+
+        if self.is_cancelled() {
+            process.cancel().await?;
+            return Err(MediaError::Cancelled);
+        }
 
         match state {
             crate::ffmpeg::process::ProcessState::Completed => Ok(()),

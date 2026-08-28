@@ -18,6 +18,7 @@ pub struct App {
     cmd_rx: mpsc::UnboundedReceiver<GuiCommand>,
     event_rx: mpsc::UnboundedReceiver<JobEvent>,
     job_tx: Option<mpsc::UnboundedSender<JobRequest>>,
+    cancel_tx: Option<tokio::sync::watch::Sender<Option<String>>>,
     _runtime: tokio::runtime::Runtime,
 }
 
@@ -50,8 +51,13 @@ impl App {
             }
         };
 
+        let mut cancel_tx = None;
         if let Some(locator) = locator {
-            runtime.spawn(run_job_loop(locator, job_rx, event_tx, ctx));
+            let executor = Arc::new(media_core::jobs::executor::JobExecutor::new(
+                (*locator).clone(),
+            ));
+            cancel_tx = Some(executor.cancel_sender());
+            runtime.spawn(run_job_loop(executor, job_rx, event_tx, ctx));
         }
 
         Self {
@@ -61,6 +67,7 @@ impl App {
             cmd_rx,
             event_rx,
             job_tx: Some(job_tx),
+            cancel_tx,
             _runtime: runtime,
         }
     }
@@ -113,6 +120,9 @@ impl App {
                 }
                 GuiCommand::CancelJob(id) => {
                     self.state.cancel_job(&id);
+                    if let Some(ref tx) = self.cancel_tx {
+                        let _ = tx.send(Some("cancel".to_string()));
+                    }
                 }
                 GuiCommand::RemoveJob(id) => {
                     self.state.remove_job(&id);
@@ -211,13 +221,11 @@ impl eframe::App for App {
 }
 
 async fn run_job_loop(
-    locator: Arc<FfmpegLocator>,
+    executor: Arc<media_core::jobs::executor::JobExecutor>,
     mut job_rx: mpsc::UnboundedReceiver<JobRequest>,
     event_tx: mpsc::UnboundedSender<JobEvent>,
     ctx: egui::Context,
 ) {
-    let executor = media_core::jobs::executor::JobExecutor::new((*locator).clone());
-
     while let Some(request) = job_rx.recv().await {
         let mut job = media_core::jobs::job::Job::new(request);
         let id = job.id.clone();
