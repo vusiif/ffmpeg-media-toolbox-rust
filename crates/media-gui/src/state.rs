@@ -30,7 +30,7 @@ impl AppState {
             presets,
             queue: JobQueue::new(),
             last_error: None,
-            lang: Lang::new(Language::English),
+            lang: Lang::new(detect_system_language()),
         }
     }
 
@@ -142,4 +142,36 @@ impl AppState {
     pub fn set_language(&mut self, lang: Language) {
         self.lang = Lang::new(lang);
     }
+}
+
+fn detect_system_language() -> Language {
+    // Check standard locale env vars
+    for var in &["LANG", "LC_ALL", "LC_MESSAGES", "LANGUAGE"] {
+        if let Ok(val) = std::env::var(var) {
+            if val.to_lowercase().starts_with("zh") {
+                return Language::Chinese;
+            }
+        }
+    }
+
+    // Windows: check common env vars set by Chinese locale
+    for var in &["MICROSOFT_WINDOWS_LOCALE"] {
+        if let Ok(val) = std::env::var(var) {
+            if val.to_lowercase().contains("zh") || val.to_lowercase().contains("chinese") {
+                return Language::Chinese;
+            }
+        }
+    }
+
+    // Windows: check USERPROFILE path for Chinese characters as heuristic
+    if let Ok(profile) = std::env::var("USERPROFILE") {
+        if profile
+            .chars()
+            .any(|c| ('\u{4e00}'..='\u{9fff}').contains(&c))
+        {
+            return Language::Chinese;
+        }
+    }
+
+    Language::English
 }
