@@ -3,6 +3,12 @@ pub struct FilterGraph {
     filters: Vec<String>,
 }
 
+impl std::fmt::Display for FilterGraph {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.filters.join(","))
+    }
+}
+
 impl FilterGraph {
     pub fn new() -> Self {
         Self {
@@ -16,10 +22,6 @@ impl FilterGraph {
 
     pub fn is_empty(&self) -> bool {
         self.filters.is_empty()
-    }
-
-    pub fn to_string(&self) -> String {
-        self.filters.join(",")
     }
 
     pub fn to_filter_complex(&self) -> Vec<String> {

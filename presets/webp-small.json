@@ -1,0 +1,12 @@
+{
+  "name": "WebP Small",
+  "preset_type": "Image",
+  "description": "WebP small file size",
+  "image": {
+    "format": "webp",
+    "quality": 75,
+    "max_width": 1920,
+    "max_height": 1080
+  },
+  "builtin": true
+}

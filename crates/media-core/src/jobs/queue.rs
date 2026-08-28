@@ -6,6 +6,12 @@ pub struct JobQueue {
     jobs: VecDeque<Job>,
 }
 
+impl Default for JobQueue {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl JobQueue {
     pub fn new() -> Self {
         Self {

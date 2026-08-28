@@ -3,7 +3,11 @@ use std::path::PathBuf;
 use crate::app::GuiCommand;
 use crate::state::AppState;
 
-pub fn show(ui: &mut egui::Ui, state: &mut AppState, tx: tokio::sync::mpsc::UnboundedSender<GuiCommand>) {
+pub fn show(
+    ui: &mut egui::Ui,
+    state: &mut AppState,
+    tx: tokio::sync::mpsc::UnboundedSender<GuiCommand>,
+) {
     ui.heading("Batch Processing");
     ui.add_space(8.0);
 

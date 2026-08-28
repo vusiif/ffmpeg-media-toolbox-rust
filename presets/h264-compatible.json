@@ -1,0 +1,15 @@
+{
+  "name": "H264 Compatible",
+  "preset_type": "Video",
+  "description": "H.264 + AAC, wide compatibility",
+  "video": {
+    "codec": "libx264",
+    "quality": { "Crf": 23 }
+  },
+  "audio": {
+    "codec": "aac",
+    "bitrate": "192k"
+  },
+  "container": "mp4",
+  "builtin": true
+}

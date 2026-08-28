@@ -4,12 +4,19 @@ use crate::app::GuiCommand;
 use crate::state::AppState;
 use crate::widgets;
 
-pub fn show(ui: &mut egui::Ui, state: &mut AppState, tx: tokio::sync::mpsc::UnboundedSender<GuiCommand>) {
+pub fn show(
+    ui: &mut egui::Ui,
+    state: &mut AppState,
+    tx: tokio::sync::mpsc::UnboundedSender<GuiCommand>,
+) {
     ui.heading("Quick Convert");
     ui.add_space(8.0);
 
     if !state.ffmpeg_valid {
-        ui.colored_label(egui::Color32::RED, "FFmpeg not found! Please install FFmpeg.");
+        ui.colored_label(
+            egui::Color32::RED,
+            "FFmpeg not found! Please install FFmpeg.",
+        );
         return;
     }
 

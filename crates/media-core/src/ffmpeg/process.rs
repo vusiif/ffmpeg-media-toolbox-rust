@@ -70,9 +70,10 @@ impl FfmpegProcess {
             on_progress(&progress);
         }
 
-        let status = child.wait().await.map_err(|e| {
-            MediaError::Other(format!("Failed to wait for ffmpeg: {}", e))
-        })?;
+        let status = child
+            .wait()
+            .await
+            .map_err(|e| MediaError::Other(format!("Failed to wait for ffmpeg: {}", e)))?;
 
         if status.success() {
             self.state = ProcessState::Completed;
@@ -86,9 +87,10 @@ impl FfmpegProcess {
 
     pub async fn cancel(&mut self) -> Result<(), MediaError> {
         if let Some(ref mut child) = self.child {
-            child.kill().await.map_err(|e| {
-                MediaError::Other(format!("Failed to kill ffmpeg: {}", e))
-            })?;
+            child
+                .kill()
+                .await
+                .map_err(|e| MediaError::Other(format!("Failed to kill ffmpeg: {}", e)))?;
             self.state = ProcessState::Killed;
         }
         Ok(())

@@ -43,7 +43,7 @@ impl NamingTemplate {
 
     pub fn render_path(
         &self,
-        source: &PathBuf,
+        source: &std::path::Path,
         new_ext: &str,
         index: Option<usize>,
     ) -> PathBuf {
@@ -54,7 +54,7 @@ impl NamingTemplate {
         let ext = new_ext.trim_start_matches('.');
         let rendered = self.render(&stem, ext, index, None, None);
 
-        let mut output = source.clone();
+        let mut output = source.to_path_buf();
         output.set_file_name(rendered);
         if !ext.is_empty() {
             output.set_extension(ext);

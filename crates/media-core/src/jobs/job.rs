@@ -10,6 +10,12 @@ use crate::pipeline::operation::{ConvertOperation, ImageOperation};
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct JobId(pub String);
 
+impl Default for JobId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl JobId {
     pub fn new() -> Self {
         Self(Uuid::new_v4().to_string())

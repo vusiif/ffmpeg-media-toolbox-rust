@@ -3,7 +3,11 @@ use std::path::PathBuf;
 use crate::app::GuiCommand;
 use crate::state::AppState;
 
-pub fn show(ui: &mut egui::Ui, state: &mut AppState, tx: tokio::sync::mpsc::UnboundedSender<GuiCommand>) {
+pub fn show(
+    ui: &mut egui::Ui,
+    state: &mut AppState,
+    tx: tokio::sync::mpsc::UnboundedSender<GuiCommand>,
+) {
     ui.heading("Image Tools");
     ui.add_space(8.0);
 
@@ -27,7 +31,7 @@ pub fn show(ui: &mut egui::Ui, state: &mut AppState, tx: tokio::sync::mpsc::Unbo
             .selected_text("webp")
             .show_ui(ui, |ui| {
                 for fmt in &["webp", "png", "jpg", "bmp"] {
-                    ui.selectable_label(false, *fmt);
+                    let _ = ui.selectable_label(false, *fmt);
                 }
             });
     });

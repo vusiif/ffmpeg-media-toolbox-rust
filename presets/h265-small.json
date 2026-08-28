@@ -1,0 +1,15 @@
+{
+  "name": "H265 Small",
+  "preset_type": "Video",
+  "description": "H.265 small file size, good for sharing",
+  "video": {
+    "codec": "libx265",
+    "quality": { "Crf": 28 }
+  },
+  "audio": {
+    "codec": "aac",
+    "bitrate": "128k"
+  },
+  "container": "mp4",
+  "builtin": true
+}

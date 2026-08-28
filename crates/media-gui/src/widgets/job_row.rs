@@ -28,20 +28,16 @@ pub fn show(
         }
 
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            if status == "FAILED" || status == "CANCELLED" {
-                if ui.small_button("Retry").clicked() {
-                    let _ = tx.send(GuiCommand::RetryJob(id.to_string()));
-                }
+            if (status == "FAILED" || status == "CANCELLED") && ui.small_button("Retry").clicked() {
+                let _ = tx.send(GuiCommand::RetryJob(id.to_string()));
             }
-            if status != "RUNNING" {
-                if ui.small_button("Remove").clicked() {
-                    let _ = tx.send(GuiCommand::RemoveJob(id.to_string()));
-                }
+            if status != "RUNNING" && ui.small_button("Remove").clicked() {
+                let _ = tx.send(GuiCommand::RemoveJob(id.to_string()));
             }
-            if status == "RUNNING" || status == "WAITING" || status == "PREPARING" {
-                if ui.small_button("Cancel").clicked() {
-                    let _ = tx.send(GuiCommand::CancelJob(id.to_string()));
-                }
+            if (status == "RUNNING" || status == "WAITING" || status == "PREPARING")
+                && ui.small_button("Cancel").clicked()
+            {
+                let _ = tx.send(GuiCommand::CancelJob(id.to_string()));
             }
         });
     });

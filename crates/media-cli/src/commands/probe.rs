@@ -35,17 +35,17 @@ pub async fn run(args: ProbeArgs) -> Result<(), media_core::MediaError> {
     } else {
         println!("File: {}", media_file.path.display());
         println!("Format: {}", media_file.format_name);
-        println!(
-            "Size: {}",
-            format_size(media_file.file_size)
-        );
+        println!("Size: {}", format_size(media_file.file_size));
         if let Some(d) = media_file.duration {
             println!("Duration: {:.2}s", d.as_secs_f64());
         }
         for vs in &media_file.video_streams {
             println!(
                 "Video #{}: {} {}x{} {:.2}fps",
-                vs.index, vs.codec, vs.width, vs.height,
+                vs.index,
+                vs.codec,
+                vs.width,
+                vs.height,
                 vs.fps.unwrap_or(0.0)
             );
         }

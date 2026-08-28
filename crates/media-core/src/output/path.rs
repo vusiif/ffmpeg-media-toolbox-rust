@@ -33,6 +33,12 @@ pub struct OutputPath {
     pub mirror_structure: bool,
 }
 
+impl Default for OutputPath {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl OutputPath {
     pub fn new() -> Self {
         Self {
@@ -44,15 +50,12 @@ impl OutputPath {
     }
 
     pub fn resolve(&self, input: &Path, new_ext: &str, index: Option<usize>) -> PathBuf {
-        let output_dir = self.directory.clone().unwrap_or_else(|| {
-            input.parent().unwrap_or(Path::new(".")).to_path_buf()
-        });
+        let output_dir = self
+            .directory
+            .clone()
+            .unwrap_or_else(|| input.parent().unwrap_or(Path::new(".")).to_path_buf());
 
-        let filename = self.naming.render_path(
-            &input.to_path_buf(),
-            new_ext,
-            index,
-        );
+        let filename = self.naming.render_path(input, new_ext, index);
 
         let file_name = filename
             .file_name()
@@ -102,9 +105,9 @@ impl OutputPath {
                     "Could not find unused filename".into(),
                 ))
             }
-            ConflictPolicy::Ask => {
-                Err(MediaError::OutputPath("File exists, user decision needed".into()))
-            }
+            ConflictPolicy::Ask => Err(MediaError::OutputPath(
+                "File exists, user decision needed".into(),
+            )),
         }
     }
 }

@@ -3,10 +3,8 @@ use std::path::PathBuf;
 use crate::app::GuiCommand;
 
 pub fn show(ui: &mut egui::Ui, tx: &tokio::sync::mpsc::UnboundedSender<GuiCommand>) {
-    let response = ui.allocate_response(
-        egui::vec2(ui.available_width(), 80.0),
-        egui::Sense::hover(),
-    );
+    let response =
+        ui.allocate_response(egui::vec2(ui.available_width(), 80.0), egui::Sense::hover());
 
     let rect = response.rect;
     let painter = ui.painter_at(rect);
@@ -14,10 +12,7 @@ pub fn show(ui: &mut egui::Ui, tx: &tokio::sync::mpsc::UnboundedSender<GuiComman
     let dropped_files = ui.input(|i| i.raw.dropped_files.clone());
 
     if !dropped_files.is_empty() {
-        let paths: Vec<PathBuf> = dropped_files
-            .into_iter()
-            .filter_map(|f| f.path)
-            .collect();
+        let paths: Vec<PathBuf> = dropped_files.into_iter().filter_map(|f| f.path).collect();
 
         if !paths.is_empty() {
             let _ = tx.send(GuiCommand::AddFiles(paths));

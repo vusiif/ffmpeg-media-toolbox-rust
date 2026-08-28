@@ -3,7 +3,11 @@ use std::path::PathBuf;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
-#[command(name = "media-rs", version, about = "Fast media processor powered by FFmpeg")]
+#[command(
+    name = "media-rs",
+    version,
+    about = "Fast media processor powered by FFmpeg"
+)]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,

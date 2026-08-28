@@ -1,8 +1,8 @@
 use std::path::Path;
 use std::process::Command;
 
-use crate::MediaError;
 use crate::media::MediaFile;
+use crate::MediaError;
 
 use super::locator::FfmpegLocator;
 
@@ -112,10 +112,7 @@ impl FfprobeOutput {
                         height: stream.height.unwrap_or(0),
                         fps: parse_frame_rate(stream.r_frame_rate.as_deref()),
                         pixel_format: stream.pix_fmt.clone(),
-                        bit_rate: stream
-                            .bit_rate
-                            .as_deref()
-                            .and_then(|s| s.parse().ok()),
+                        bit_rate: stream.bit_rate.as_deref().and_then(|s| s.parse().ok()),
                         duration: stream
                             .duration
                             .as_deref()
@@ -134,10 +131,7 @@ impl FfprobeOutput {
                             .unwrap_or(0),
                         channels: stream.channels.unwrap_or(0),
                         channel_layout: stream.channel_layout.clone(),
-                        bit_rate: stream
-                            .bit_rate
-                            .as_deref()
-                            .and_then(|s| s.parse().ok()),
+                        bit_rate: stream.bit_rate.as_deref().and_then(|s| s.parse().ok()),
                         duration: stream
                             .duration
                             .as_deref()
@@ -169,10 +163,7 @@ impl FfprobeOutput {
             file_size,
             duration,
             format_name: format.format_name.unwrap_or_default(),
-            bit_rate: format
-                .bit_rate
-                .as_deref()
-                .and_then(|s| s.parse().ok()),
+            bit_rate: format.bit_rate.as_deref().and_then(|s| s.parse().ok()),
             video_streams,
             audio_streams,
             subtitle_streams,

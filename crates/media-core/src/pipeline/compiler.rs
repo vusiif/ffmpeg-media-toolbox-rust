@@ -46,18 +46,10 @@ impl PipelineCompiler {
         }
 
         let scale = match r.mode {
-            ResizeMode::Exact => {
-                if r.keep_aspect {
-                    format!("scale={}:{}", w, h)
-                } else {
-                    format!("scale={}:{}", w, h)
-                }
-            }
+            ResizeMode::Exact => format!("scale={}:{}", w, h),
             ResizeMode::Fit => {
                 if r.prevent_upscale {
                     format!("scale='min({},{})':min({},{})", w, w, h, h)
-                } else if r.keep_aspect {
-                    format!("scale={}:{}", w, h)
                 } else {
                     format!("scale={}:{}", w, h)
                 }

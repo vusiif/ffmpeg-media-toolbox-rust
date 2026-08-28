@@ -67,7 +67,13 @@ pub async fn run(args: BatchArgs) -> Result<(), media_core::MediaError> {
         }
 
         if !args.quiet {
-            println!("[{}/{}] {} -> {}", i + 1, files.len(), input.display(), output_path.display());
+            println!(
+                "[{}/{}] {} -> {}",
+                i + 1,
+                files.len(),
+                input.display(),
+                output_path.display()
+            );
         }
 
         let mut process = FfmpegProcess::spawn(&cmd).await?;
@@ -101,8 +107,7 @@ fn collect_files_inner(
     recursive: bool,
     files: &mut Vec<PathBuf>,
 ) -> Result<(), media_core::MediaError> {
-    let entries = std::fs::read_dir(dir)
-        .map_err(|e| media_core::MediaError::Io(e))?;
+    let entries = std::fs::read_dir(dir).map_err(media_core::MediaError::Io)?;
 
     for entry in entries.flatten() {
         let path = entry.path();

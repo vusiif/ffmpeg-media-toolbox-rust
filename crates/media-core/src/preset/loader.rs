@@ -8,6 +8,12 @@ pub struct PresetLoader {
     search_dirs: Vec<PathBuf>,
 }
 
+impl Default for PresetLoader {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PresetLoader {
     pub fn new() -> Self {
         Self {

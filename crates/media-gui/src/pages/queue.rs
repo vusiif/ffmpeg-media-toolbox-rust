@@ -2,7 +2,11 @@ use crate::app::GuiCommand;
 use crate::state::AppState;
 use crate::widgets;
 
-pub fn show(ui: &mut egui::Ui, state: &mut AppState, tx: tokio::sync::mpsc::UnboundedSender<GuiCommand>) {
+pub fn show(
+    ui: &mut egui::Ui,
+    state: &mut AppState,
+    tx: tokio::sync::mpsc::UnboundedSender<GuiCommand>,
+) {
     ui.heading("Job Queue");
     ui.add_space(8.0);
 

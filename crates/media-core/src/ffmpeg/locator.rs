@@ -73,7 +73,11 @@ impl FfmpegLocator {
 
 fn which(name: &str) -> Result<PathBuf, MediaError> {
     let path_var = std::env::var("PATH").unwrap_or_default();
-    let sep = if cfg!(target_os = "windows") { ';' } else { ':' };
+    let sep = if cfg!(target_os = "windows") {
+        ';'
+    } else {
+        ':'
+    };
 
     for dir in path_var.split(sep) {
         let candidate = PathBuf::from(dir).join(name);

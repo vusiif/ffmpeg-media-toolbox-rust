@@ -6,7 +6,8 @@ pub async fn run(args: PresetArgs) -> Result<(), media_core::MediaError> {
     match args.action {
         PresetAction::List => {
             let presets = builtin_presets();
-            println!("{:<25} {:<10} {}", "NAME", "TYPE", "DESCRIPTION");
+            let header = format!("{:<25} {:<10} DESCRIPTION", "NAME", "TYPE");
+            println!("{}", header);
             println!("{}", "-".repeat(70));
             for p in presets {
                 let type_str = match p.preset_type {
@@ -19,9 +20,7 @@ pub async fn run(args: PresetArgs) -> Result<(), media_core::MediaError> {
         }
         PresetAction::Show { name } => {
             let presets = builtin_presets();
-            let preset = presets
-                .iter()
-                .find(|p| p.name.eq_ignore_ascii_case(&name));
+            let preset = presets.iter().find(|p| p.name.eq_ignore_ascii_case(&name));
 
             match preset {
                 Some(p) => {

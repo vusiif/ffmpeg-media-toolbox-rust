@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use media_core::ffmpeg::locator::FfmpegLocator;
-use media_core::jobs::job::{JobId, JobRequest, ConvertRequest, ProbeRequest};
+use media_core::jobs::job::{ConvertRequest, JobId, JobRequest, ProbeRequest};
 use media_core::jobs::queue::{JobQueue, QueueStats};
 use media_core::preset::builtin::builtin_presets;
 use media_core::preset::preset::Preset;
