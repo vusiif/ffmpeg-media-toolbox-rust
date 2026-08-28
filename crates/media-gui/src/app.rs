@@ -1,7 +1,13 @@
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use tokio::sync::mpsc;
 
+use media_core::ffmpeg::locator::FfmpegLocator;
+use media_core::jobs::executor::JobEvent;
+use media_core::jobs::job::JobRequest;
+
+use crate::i18n::Language;
 use crate::pages::Page;
 use crate::state::AppState;
 
@@ -10,6 +16,9 @@ pub struct App {
     current_page: Page,
     cmd_tx: mpsc::UnboundedSender<GuiCommand>,
     cmd_rx: mpsc::UnboundedReceiver<GuiCommand>,
+    event_rx: mpsc::UnboundedReceiver<JobEvent>,
+    job_tx: Option<mpsc::UnboundedSender<JobRequest>>,
+    _runtime: tokio::runtime::Runtime,
 }
 
 pub enum GuiCommand {
@@ -21,18 +30,69 @@ pub enum GuiCommand {
     RetryJob(String),
     ClearCompleted,
     SwitchPage(Page),
-    SetLanguage(crate::i18n::Language),
+    SetLanguage(Language),
 }
 
 impl App {
-    pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
+    pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         let (cmd_tx, cmd_rx) = mpsc::unbounded_channel();
+        let (event_tx, event_rx) = mpsc::unbounded_channel();
+        let (job_tx, job_rx) = mpsc::unbounded_channel::<JobRequest>();
+
+        let runtime = tokio::runtime::Runtime::new().expect("Failed to create tokio runtime");
+
+        let ctx = cc.egui_ctx.clone();
+        let locator = match FfmpegLocator::new() {
+            Ok(loc) => Some(Arc::new(loc)),
+            Err(e) => {
+                tracing::warn!("FFmpeg not found: {}", e);
+                None
+            }
+        };
+
+        if let Some(locator) = locator {
+            runtime.spawn(run_job_loop(locator, job_rx, event_tx, ctx));
+        }
 
         Self {
             state: AppState::new(),
             current_page: Page::QuickConvert,
             cmd_tx,
             cmd_rx,
+            event_rx,
+            job_tx: Some(job_tx),
+            _runtime: runtime,
+        }
+    }
+
+    fn process_events(&mut self, ctx: &egui::Context) {
+        let mut got_events = false;
+        while let Ok(event) = self.event_rx.try_recv() {
+            got_events = true;
+            match event {
+                JobEvent::Started(id) => {
+                    self.state
+                        .update_job_status(&id.0, media_core::jobs::job::JobStatus::Running);
+                }
+                JobEvent::Progress(id, info) => {
+                    self.state.update_job_progress(&id.0, info);
+                }
+                JobEvent::Completed(id) => {
+                    self.state
+                        .update_job_status(&id.0, media_core::jobs::job::JobStatus::Completed);
+                }
+                JobEvent::Failed(id, msg) => {
+                    self.state
+                        .update_job_status(&id.0, media_core::jobs::job::JobStatus::Failed(msg));
+                }
+                JobEvent::Cancelled(id) => {
+                    self.state
+                        .update_job_status(&id.0, media_core::jobs::job::JobStatus::Cancelled);
+                }
+            }
+        }
+        if got_events {
+            ctx.request_repaint();
         }
     }
 
@@ -49,7 +109,7 @@ impl App {
                     self.state.add_directory(path);
                 }
                 GuiCommand::StartJob(path) => {
-                    self.state.start_convert_job(path);
+                    self.state.enqueue_and_send(path, self.job_tx.as_ref());
                 }
                 GuiCommand::CancelJob(id) => {
                     self.state.cancel_job(&id);
@@ -73,6 +133,7 @@ impl App {
 
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        self.process_events(ctx);
         self.process_commands();
 
         let lang = &self.state.lang;
@@ -107,18 +168,18 @@ impl eframe::App for App {
         egui::TopBottomPanel::bottom("status_bar")
             .exact_height(28.0)
             .show(ctx, |ui| {
-                let stats = self.state.queue_stats();
+                let stats = self.state.job_display_stats();
                 ui.horizontal(|ui| {
                     ui.label(format!(
                         "{} {} | {} {} | {} {} | {} {}",
                         lang.t(crate::i18n::Key::Running),
-                        stats.running,
+                        stats.0,
                         lang.t(crate::i18n::Key::Waiting),
-                        stats.pending + stats.running,
+                        stats.1,
                         lang.t(crate::i18n::Key::Done),
-                        stats.completed,
+                        stats.2,
                         lang.t(crate::i18n::Key::Failed),
-                        stats.failed
+                        stats.3
                     ));
                 });
             });
@@ -146,5 +207,28 @@ impl eframe::App for App {
                 }
             }
         });
+    }
+}
+
+async fn run_job_loop(
+    locator: Arc<FfmpegLocator>,
+    mut job_rx: mpsc::UnboundedReceiver<JobRequest>,
+    event_tx: mpsc::UnboundedSender<JobEvent>,
+    ctx: egui::Context,
+) {
+    let executor = media_core::jobs::executor::JobExecutor::new((*locator).clone());
+
+    while let Some(request) = job_rx.recv().await {
+        let mut job = media_core::jobs::job::Job::new(request);
+        let id = job.id.clone();
+
+        tracing::info!("Starting job {}", id);
+
+        if let Err(e) = executor.execute(&mut job, &event_tx).await {
+            tracing::error!("Job {} failed: {}", id, e);
+            let _ = event_tx.send(JobEvent::Failed(id, e.to_string()));
+        }
+
+        ctx.request_repaint();
     }
 }
