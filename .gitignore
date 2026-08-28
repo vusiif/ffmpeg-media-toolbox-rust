@@ -1,3 +1,26 @@
+# Build
 /target
-./AI_PLAN.md
-./.codex
+**/target/
+
+# Plans & docs that are dev-only
+*.md
+!README.md
+!LICENSE.md
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Codex
+.codex/
+
+# Temp
+*.tmp
+*.bak
+*.swp
