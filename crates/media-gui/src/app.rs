@@ -21,6 +21,7 @@ pub enum GuiCommand {
     RetryJob(String),
     ClearCompleted,
     SwitchPage(Page),
+    SetLanguage(crate::i18n::Language),
 }
 
 impl App {
@@ -62,6 +63,9 @@ impl App {
                 GuiCommand::ClearCompleted => {
                     self.state.clear_completed_jobs();
                 }
+                GuiCommand::SetLanguage(lang) => {
+                    self.state.set_language(lang);
+                }
             }
         }
     }
@@ -71,9 +75,11 @@ impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         self.process_commands();
 
+        let lang = &self.state.lang;
+
         egui::TopBottomPanel::top("top_bar").show(ctx, |ui| {
             ui.horizontal(|ui| {
-                ui.heading("Media RS");
+                ui.heading(lang.t(crate::i18n::Key::AppTitle));
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     if ui.button("⚙").clicked() {
                         self.current_page = Page::Settings;
@@ -90,7 +96,7 @@ impl eframe::App for App {
                     ui.add_space(8.0);
                     for page in Page::all() {
                         let selected = self.current_page == *page;
-                        let label = page.label();
+                        let label = page.label(lang);
                         if ui.selectable_label(selected, label).clicked() {
                             self.current_page = *page;
                         }
@@ -104,10 +110,14 @@ impl eframe::App for App {
                 let stats = self.state.queue_stats();
                 ui.horizontal(|ui| {
                     ui.label(format!(
-                        "Running {} | Waiting {} | Done {} | Failed {}",
+                        "{} {} | {} {} | {} {} | {} {}",
+                        lang.t(crate::i18n::Key::Running),
                         stats.running,
+                        lang.t(crate::i18n::Key::Waiting),
                         stats.pending + stats.running,
+                        lang.t(crate::i18n::Key::Done),
                         stats.completed,
+                        lang.t(crate::i18n::Key::Failed),
                         stats.failed
                     ));
                 });
@@ -132,7 +142,7 @@ impl eframe::App for App {
                     crate::pages::presets::show(ui, &mut self.state);
                 }
                 Page::Settings => {
-                    crate::pages::settings::show(ui, &mut self.state);
+                    crate::pages::settings::show(ui, &mut self.state, tx);
                 }
             }
         });

@@ -6,6 +6,8 @@ use media_core::jobs::queue::{JobQueue, QueueStats};
 use media_core::preset::builtin::builtin_presets;
 use media_core::preset::preset::Preset;
 
+use crate::i18n::{Lang, Language};
+
 pub struct AppState {
     pub ffmpeg_valid: bool,
     pub files: Vec<PathBuf>,
@@ -13,6 +15,7 @@ pub struct AppState {
     pub presets: Vec<Preset>,
     pub queue: JobQueue,
     pub last_error: Option<String>,
+    pub lang: Lang,
 }
 
 impl AppState {
@@ -27,6 +30,7 @@ impl AppState {
             presets,
             queue: JobQueue::new(),
             last_error: None,
+            lang: Lang::new(Language::English),
         }
     }
 
@@ -133,5 +137,9 @@ impl AppState {
 
     pub fn clear_files(&mut self) {
         self.files.clear();
+    }
+
+    pub fn set_language(&mut self, lang: Language) {
+        self.lang = Lang::new(lang);
     }
 }

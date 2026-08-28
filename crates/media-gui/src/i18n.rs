@@ -1,0 +1,215 @@
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Language {
+    English,
+    Chinese,
+}
+
+impl Language {
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::English => "English",
+            Self::Chinese => "中文",
+        }
+    }
+
+    pub fn all() -> &'static [Language] {
+        &[Self::English, Self::Chinese]
+    }
+}
+
+pub struct Lang {
+    pub lang: Language,
+}
+
+impl Lang {
+    pub fn new(lang: Language) -> Self {
+        Self { lang }
+    }
+
+    pub fn t(&self, key: Key) -> &'static str {
+        match self.lang {
+            Language::English => key.en(),
+            Language::Chinese => key.zh(),
+        }
+    }
+}
+
+pub enum Key {
+    AppTitle,
+    QuickConvert,
+    Batch,
+    Image,
+    Queue,
+    Presets,
+    Settings,
+    FFmpegStatus,
+    Available,
+    NotFound,
+    About,
+    Description,
+    Preset,
+    None,
+    DropFilesHere,
+    AddFiles,
+    AddDirectory,
+    StartConvert,
+    StartBatch,
+    ConvertAll,
+    Clear,
+    ClearAll,
+    ClearCompleted,
+    FileSelected,
+    FilesSelected,
+    FilesQueued,
+    ImagesSelected,
+    OutputFormat,
+    ImageTools,
+    ImageOps,
+    BatchProcessing,
+    JobQueue,
+    Total,
+    Running,
+    Waiting,
+    Pending,
+    Done,
+    Failed,
+    Cancelled,
+    Preparing,
+    Retry,
+    Remove,
+    Cancel,
+    NoJobs,
+    PresetDetails,
+    Video,
+    Audio,
+    ImageType,
+    Name,
+    Type,
+    HeaderDescription,
+    SelectPreset,
+    FFmpegNotFound,
+    FfmpegNotFoundMsg,
+    LanguageSwitch,
+}
+
+impl Key {
+    fn en(self) -> &'static str {
+        match self {
+            Self::AppTitle => "Media RS",
+            Self::QuickConvert => "Quick Convert",
+            Self::Batch => "Batch",
+            Self::Image => "Image",
+            Self::Queue => "Queue",
+            Self::Presets => "Presets",
+            Self::Settings => "Settings",
+            Self::FFmpegStatus => "FFmpeg Status:",
+            Self::Available => "Available",
+            Self::NotFound => "Not Found",
+            Self::About => "About",
+            Self::Description => "Fast media processor powered by FFmpeg",
+            Self::Preset => "Preset:",
+            Self::None => "None",
+            Self::DropFilesHere => "Drop files here",
+            Self::AddFiles => "Add Files...",
+            Self::AddDirectory => "Add Directory...",
+            Self::StartConvert => "Start Convert",
+            Self::StartBatch => "Start Batch",
+            Self::ConvertAll => "Convert All",
+            Self::Clear => "Clear",
+            Self::ClearAll => "Clear All",
+            Self::ClearCompleted => "Clear Completed",
+            Self::FileSelected => "{} file selected",
+            Self::FilesSelected => "{} file(s) selected",
+            Self::FilesQueued => "{} file(s) queued",
+            Self::ImagesSelected => "{} image(s) selected",
+            Self::OutputFormat => "Output format:",
+            Self::ImageTools => "Image Tools",
+            Self::ImageOps => "Image operations: Convert, Resize, Crop, Rotate, Flip",
+            Self::BatchProcessing => "Batch Processing",
+            Self::JobQueue => "Job Queue",
+            Self::Total => "Total:",
+            Self::Running => "Running:",
+            Self::Waiting => "Waiting:",
+            Self::Pending => "Pending:",
+            Self::Done => "Done:",
+            Self::Failed => "Failed:",
+            Self::Cancelled => "Cancelled",
+            Self::Preparing => "Preparing",
+            Self::Retry => "Retry",
+            Self::Remove => "Remove",
+            Self::Cancel => "Cancel",
+            Self::NoJobs => "No jobs in queue",
+            Self::PresetDetails => "Preset Details",
+            Self::Video => "Video",
+            Self::Audio => "Audio",
+            Self::ImageType => "Image",
+            Self::Name => "NAME",
+            Self::Type => "TYPE",
+            Self::HeaderDescription => "DESCRIPTION",
+            Self::SelectPreset => "Select preset",
+            Self::FFmpegNotFound => "FFmpeg not found!",
+            Self::FfmpegNotFoundMsg => "Please install FFmpeg or set the path in Settings.",
+            Self::LanguageSwitch => "Language:",
+        }
+    }
+
+    fn zh(self) -> &'static str {
+        match self {
+            Self::AppTitle => "Media RS",
+            Self::QuickConvert => "快速转换",
+            Self::Batch => "批量处理",
+            Self::Image => "图片工具",
+            Self::Queue => "任务队列",
+            Self::Presets => "预设管理",
+            Self::Settings => "设置",
+            Self::FFmpegStatus => "FFmpeg 状态：",
+            Self::Available => "可用",
+            Self::NotFound => "未找到",
+            Self::About => "关于",
+            Self::Description => "基于 FFmpeg 的轻量级媒体处理工具",
+            Self::Preset => "预设：",
+            Self::None => "无",
+            Self::DropFilesHere => "拖拽文件到此处",
+            Self::AddFiles => "添加文件...",
+            Self::AddDirectory => "添加目录...",
+            Self::StartConvert => "开始转换",
+            Self::StartBatch => "开始批处理",
+            Self::ConvertAll => "全部转换",
+            Self::Clear => "清空",
+            Self::ClearAll => "清空全部",
+            Self::ClearCompleted => "清除已完成",
+            Self::FileSelected => "已选择 {} 个文件",
+            Self::FilesSelected => "已选择 {} 个文件",
+            Self::FilesQueued => "已排队 {} 个文件",
+            Self::ImagesSelected => "已选择 {} 张图片",
+            Self::OutputFormat => "输出格式：",
+            Self::ImageTools => "图片工具",
+            Self::ImageOps => "图片操作：转换、缩放、裁剪、旋转、翻转",
+            Self::BatchProcessing => "批量处理",
+            Self::JobQueue => "任务队列",
+            Self::Total => "总计：",
+            Self::Running => "运行中：",
+            Self::Waiting => "等待中：",
+            Self::Pending => "待处理：",
+            Self::Done => "已完成：",
+            Self::Failed => "失败：",
+            Self::Cancelled => "已取消",
+            Self::Preparing => "准备中",
+            Self::Retry => "重试",
+            Self::Remove => "移除",
+            Self::Cancel => "取消",
+            Self::NoJobs => "队列中暂无任务",
+            Self::PresetDetails => "预设详情",
+            Self::Video => "视频",
+            Self::Audio => "音频",
+            Self::ImageType => "图片",
+            Self::Name => "名称",
+            Self::Type => "类型",
+            Self::HeaderDescription => "说明",
+            Self::SelectPreset => "选择预设",
+            Self::FFmpegNotFound => "未找到 FFmpeg！",
+            Self::FfmpegNotFoundMsg => "请安装 FFmpeg 或在设置中指定路径。",
+            Self::LanguageSwitch => "语言：",
+        }
+    }
+}

@@ -5,6 +5,8 @@ pub mod queue;
 pub mod quick_convert;
 pub mod settings;
 
+use crate::i18n::{Key, Lang};
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Page {
     QuickConvert,
@@ -27,14 +29,14 @@ impl Page {
         ]
     }
 
-    pub fn label(self) -> &'static str {
+    pub fn label(self, lang: &Lang) -> &'static str {
         match self {
-            Page::QuickConvert => "Quick Convert",
-            Page::Batch => "Batch",
-            Page::Image => "Image",
-            Page::Queue => "Queue",
-            Page::Presets => "Presets",
-            Page::Settings => "Settings",
+            Page::QuickConvert => lang.t(Key::QuickConvert),
+            Page::Batch => lang.t(Key::Batch),
+            Page::Image => lang.t(Key::Image),
+            Page::Queue => lang.t(Key::Queue),
+            Page::Presets => lang.t(Key::Presets),
+            Page::Settings => lang.t(Key::Settings),
         }
     }
 }

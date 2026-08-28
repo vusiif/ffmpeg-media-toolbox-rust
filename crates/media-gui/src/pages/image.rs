@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use crate::app::GuiCommand;
+use crate::i18n::Key;
 use crate::state::AppState;
 
 pub fn show(
@@ -8,13 +9,13 @@ pub fn show(
     state: &mut AppState,
     tx: tokio::sync::mpsc::UnboundedSender<GuiCommand>,
 ) {
-    ui.heading("Image Tools");
+    ui.heading(state.lang.t(Key::ImageTools));
     ui.add_space(8.0);
 
-    ui.label("Image operations: Convert, Resize, Crop, Rotate, Flip");
+    ui.label(state.lang.t(Key::ImageOps));
     ui.add_space(8.0);
 
-    if ui.button("Add Images...").clicked() {
+    if ui.button(state.lang.t(Key::AddFiles)).clicked() {
         if let Some(files) = rfd::FileDialog::new()
             .add_filter("Images", &["png", "jpg", "jpeg", "webp", "bmp", "tiff"])
             .pick_files()
@@ -26,7 +27,7 @@ pub fn show(
     ui.add_space(8.0);
 
     ui.horizontal(|ui| {
-        ui.label("Output format:");
+        ui.label(state.lang.t(Key::OutputFormat));
         egui::ComboBox::from_id_salt("image_format")
             .selected_text("webp")
             .show_ui(ui, |ui| {
@@ -39,7 +40,12 @@ pub fn show(
     ui.add_space(8.0);
 
     if !state.files.is_empty() {
-        ui.label(format!("{} image(s) selected", state.files.len()));
+        ui.label(
+            state
+                .lang
+                .t(Key::ImagesSelected)
+                .replace("{}", &state.files.len().to_string()),
+        );
 
         egui::ScrollArea::vertical()
             .max_height(200.0)
@@ -71,13 +77,13 @@ pub fn show(
         ui.add_space(8.0);
 
         ui.horizontal(|ui| {
-            if ui.button("Convert All").clicked() {
+            if ui.button(state.lang.t(Key::ConvertAll)).clicked() {
                 let files: Vec<PathBuf> = state.files.drain(..).collect();
                 for file in files {
                     let _ = tx.send(GuiCommand::StartJob(file));
                 }
             }
-            if ui.button("Clear").clicked() {
+            if ui.button(state.lang.t(Key::Clear)).clicked() {
                 state.clear_files();
             }
         });

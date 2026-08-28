@@ -1,8 +1,9 @@
 use std::path::PathBuf;
 
 use crate::app::GuiCommand;
+use crate::i18n::{Key, Lang};
 
-pub fn show(ui: &mut egui::Ui, tx: &tokio::sync::mpsc::UnboundedSender<GuiCommand>) {
+pub fn show(ui: &mut egui::Ui, tx: &tokio::sync::mpsc::UnboundedSender<GuiCommand>, lang: &Lang) {
     let response =
         ui.allocate_response(egui::vec2(ui.available_width(), 80.0), egui::Sense::hover());
 
@@ -36,7 +37,7 @@ pub fn show(ui: &mut egui::Ui, tx: &tokio::sync::mpsc::UnboundedSender<GuiComman
     painter.text(
         rect.center(),
         egui::Align2::CENTER_CENTER,
-        "Drop files here",
+        lang.t(Key::DropFilesHere),
         egui::FontId::proportional(16.0),
         ui.visuals().text_color(),
     );
