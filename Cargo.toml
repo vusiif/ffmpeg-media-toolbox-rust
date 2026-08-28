@@ -1,6 +1,43 @@
-[package]
-name = "ffmpeg_media_toolbox_rust"
-version = "0.1.0"
-edition = "2024"
+[workspace]
+members = [
+    "crates/media-core",
+    "crates/media-cli",
+    "crates/media-gui",
+]
+resolver = "2"
 
-[dependencies]
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/vusiif/ffmpeg_media_toolbox_rust"
+
+[workspace.dependencies]
+# Async
+tokio = { version = "1", features = ["full"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# Error
+thiserror = "2"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# GUI
+eframe = "0.31"
+egui = "0.31"
+egui_extras = "0.31"
+
+# Utils
+uuid = { version = "1", features = ["v4"] }
+rfd = "0.15"
+
+# Internal crates
+media-core = { path = "crates/media-core" }
