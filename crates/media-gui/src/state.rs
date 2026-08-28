@@ -154,22 +154,18 @@ fn detect_system_language() -> Language {
         }
     }
 
-    // Windows: check common env vars set by Chinese locale
-    for var in &["MICROSOFT_WINDOWS_LOCALE"] {
-        if let Ok(val) = std::env::var(var) {
-            if val.to_lowercase().contains("zh") || val.to_lowercase().contains("chinese") {
+    // Windows: query system locale via PowerShell
+    if cfg!(target_os = "windows") {
+        if let Ok(output) = std::process::Command::new("powershell")
+            .args(["-NoProfile", "-Command", "(Get-Culture).Name"])
+            .output()
+        {
+            let locale = String::from_utf8_lossy(&output.stdout)
+                .trim()
+                .to_lowercase();
+            if locale.starts_with("zh") {
                 return Language::Chinese;
             }
-        }
-    }
-
-    // Windows: check USERPROFILE path for Chinese characters as heuristic
-    if let Ok(profile) = std::env::var("USERPROFILE") {
-        if profile
-            .chars()
-            .any(|c| ('\u{4e00}'..='\u{9fff}').contains(&c))
-        {
-            return Language::Chinese;
         }
     }
 
