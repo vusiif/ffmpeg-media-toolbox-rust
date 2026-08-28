@@ -4,8 +4,10 @@ use crate::app::GuiCommand;
 use crate::i18n::{Key, Lang};
 
 pub fn show(ui: &mut egui::Ui, tx: &tokio::sync::mpsc::UnboundedSender<GuiCommand>, lang: &Lang) {
-    let response =
-        ui.allocate_response(egui::vec2(ui.available_width(), 80.0), egui::Sense::hover());
+    let response = ui.allocate_response(
+        egui::vec2(ui.available_width(), 100.0),
+        egui::Sense::hover(),
+    );
 
     let rect = response.rect;
     let painter = ui.painter_at(rect);
@@ -38,7 +40,7 @@ pub fn show(ui: &mut egui::Ui, tx: &tokio::sync::mpsc::UnboundedSender<GuiComman
         rect.center(),
         egui::Align2::CENTER_CENTER,
         lang.t(Key::DropFilesHere),
-        egui::FontId::proportional(16.0),
+        egui::FontId::proportional(20.0),
         ui.visuals().text_color(),
     );
 }

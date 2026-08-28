@@ -90,10 +90,10 @@ impl eframe::App for App {
 
         egui::SidePanel::left("nav_panel")
             .resizable(false)
-            .exact_width(140.0)
+            .exact_width(170.0)
             .show(ctx, |ui| {
                 ui.vertical(|ui| {
-                    ui.add_space(8.0);
+                    ui.add_space(12.0);
                     for page in Page::all() {
                         let selected = self.current_page == *page;
                         let label = page.label(lang);
@@ -105,7 +105,7 @@ impl eframe::App for App {
             });
 
         egui::TopBottomPanel::bottom("status_bar")
-            .exact_height(24.0)
+            .exact_height(28.0)
             .show(ctx, |ui| {
                 let stats = self.state.queue_stats();
                 ui.horizontal(|ui| {
