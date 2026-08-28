@@ -20,6 +20,8 @@ pub struct AppState {
     pub lang: Lang,
     pub jobs: Vec<DisplayJob>,
     next_display_id: u64,
+    pub batch_recursive: bool,
+    pub batch_filter: String,
 }
 
 pub struct DisplayJob {
@@ -69,6 +71,8 @@ impl AppState {
             lang: Lang::new(detect_system_language()),
             jobs: Vec::new(),
             next_display_id: 1,
+            batch_recursive: false,
+            batch_filter: String::new(),
         }
     }
 
@@ -267,6 +271,96 @@ impl AppState {
     pub fn set_language(&mut self, lang: Language) {
         self.lang = Lang::new(lang);
     }
+
+    pub fn add_directory_recursive(&mut self, path: PathBuf, filter: Option<&str>) {
+        if !path.is_dir() {
+            return;
+        }
+        collect_files_recursive(&path, &mut self.files, filter);
+    }
+
+    pub fn preview_command(&self, input: &PathBuf) -> Option<String> {
+        let preset = self.selected_preset.as_ref()?;
+        let ext = preset.container.as_deref().unwrap_or("mp4");
+        let output = input.with_extension(ext);
+
+        let mut parts = vec!["ffmpeg".to_string()];
+        parts.push("-i".to_string());
+        parts.push(input.display().to_string());
+
+        if let Some(ref v) = preset.video {
+            parts.push("-c:v".to_string());
+            parts.push(v.codec.clone());
+            if let Some(ref q) = v.quality {
+                match q {
+                    media_core::pipeline::operation::QualityMode::Crf(crf) => {
+                        parts.push("-crf".to_string());
+                        parts.push(crf.to_string());
+                    }
+                    media_core::pipeline::operation::QualityMode::Bitrate(br) => {
+                        parts.push("-b:v".to_string());
+                        parts.push(format!("{}k", br / 1000));
+                    }
+                    media_core::pipeline::operation::QualityMode::Lossless => {
+                        parts.push("-crf".to_string());
+                        parts.push("0".to_string());
+                    }
+                }
+            }
+        }
+        if let Some(ref a) = preset.audio {
+            parts.push("-c:a".to_string());
+            parts.push(a.codec.clone());
+            if let Some(ref br) = a.bitrate {
+                parts.push("-b:a".to_string());
+                parts.push(br.clone());
+            }
+        }
+
+        parts.push("-y".to_string());
+        parts.push(output.display().to_string());
+
+        Some(parts.join(" "))
+    }
+}
+
+fn collect_files_recursive(dir: &PathBuf, files: &mut Vec<PathBuf>, filter: Option<&str>) {
+    let entries = match std::fs::read_dir(dir) {
+        Ok(e) => e,
+        Err(_) => return,
+    };
+
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_file() {
+            if let Some(pattern) = filter {
+                let name = path
+                    .file_name()
+                    .map(|n| n.to_string_lossy().to_string())
+                    .unwrap_or_default();
+                if !matches_glob(pattern, &name) {
+                    continue;
+                }
+            }
+            if !files.contains(&path) {
+                files.push(path);
+            }
+        } else if path.is_dir() {
+            collect_files_recursive(&path, files, filter);
+        }
+    }
+}
+
+fn matches_glob(pattern: &str, name: &str) -> bool {
+    if pattern == "*" || pattern == "*.*" {
+        return true;
+    }
+    if let Some(ext) = pattern.strip_prefix("*.") {
+        return name
+            .to_lowercase()
+            .ends_with(&format!(".{}", ext.to_lowercase()));
+    }
+    name.to_lowercase().contains(&pattern.to_lowercase())
 }
 
 fn detect_system_language() -> Language {

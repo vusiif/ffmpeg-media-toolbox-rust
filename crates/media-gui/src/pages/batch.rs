@@ -48,9 +48,23 @@ pub fn show(
 
     ui.add_space(8.0);
 
+    ui.horizontal(|ui| {
+        ui.checkbox(&mut state.batch_recursive, state.lang.t(Key::Recursive));
+        ui.label(state.lang.t(Key::IncludeFilter));
+        ui.text_edit_singleline(&mut state.batch_filter);
+    });
+
+    ui.add_space(4.0);
+
     if ui.button(state.lang.t(Key::AddDirectory)).clicked() {
         if let Some(dir) = rfd::FileDialog::new().pick_folder() {
-            let _ = tx.send(GuiCommand::AddDirectory(dir));
+            let filter = state.batch_filter.clone();
+            let filter_ref = if filter.is_empty() {
+                None
+            } else {
+                Some(filter.as_str())
+            };
+            state.add_directory_recursive(dir, filter_ref);
         }
     }
 

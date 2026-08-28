@@ -95,6 +95,10 @@ pub enum Key {
     Rescan,
     CommandPreview,
     Version,
+    PreviewCommand,
+    CopyCommand,
+    Recursive,
+    IncludeFilter,
 }
 
 impl Key {
@@ -160,6 +164,10 @@ impl Key {
             Self::Rescan => "Rescan",
             Self::CommandPreview => "Command Preview:",
             Self::Version => "Version:",
+            Self::PreviewCommand => "Preview Command",
+            Self::CopyCommand => "Copy",
+            Self::Recursive => "Recursive",
+            Self::IncludeFilter => "Include filter (e.g. *.mov):",
         }
     }
 
@@ -225,6 +233,10 @@ impl Key {
             Self::Rescan => "重新扫描",
             Self::CommandPreview => "命令预览：",
             Self::Version => "版本：",
+            Self::PreviewCommand => "预览命令",
+            Self::CopyCommand => "复制",
+            Self::Recursive => "递归子目录",
+            Self::IncludeFilter => "包含过滤（如 *.mov）：",
         }
     }
 }

@@ -110,9 +110,23 @@ pub fn show(
                     let _ = tx.send(GuiCommand::StartJob(file));
                 }
             }
+            if ui.button(state.lang.t(Key::PreviewCommand)).clicked() {
+                // Preview is shown below
+            }
             if ui.button(state.lang.t(Key::Clear)).clicked() {
                 state.clear_files();
             }
         });
+
+        // Show preview if available
+        if let Some(first) = state.files.first() {
+            if let Some(cmd) = state.preview_command(first) {
+                ui.add_space(4.0);
+                ui.group(|ui| {
+                    ui.label(state.lang.t(Key::CommandPreview));
+                    ui.monospace(&cmd);
+                });
+            }
+        }
     }
 }
