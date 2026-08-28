@@ -10,6 +10,7 @@ pub fn show(
     ui.heading(state.lang.t(Key::Settings));
     ui.add_space(16.0);
 
+    // Language
     ui.group(|ui| {
         ui.label(state.lang.t(Key::LanguageSwitch));
         ui.horizontal(|ui| {
@@ -24,21 +25,54 @@ pub fn show(
 
     ui.add_space(16.0);
 
+    // FFmpeg
     ui.group(|ui| {
-        ui.label(state.lang.t(Key::FFmpegStatus));
-        if state.ffmpeg_valid {
-            ui.colored_label(egui::Color32::GREEN, state.lang.t(Key::Available));
-        } else {
-            ui.colored_label(egui::Color32::RED, state.lang.t(Key::NotFound));
+        ui.strong("FFmpeg");
+        ui.add_space(4.0);
+
+        ui.horizontal(|ui| {
+            ui.label(state.lang.t(Key::FFmpegStatus));
+            if state.ffmpeg_valid {
+                ui.colored_label(egui::Color32::GREEN, state.lang.t(Key::Available));
+            } else {
+                ui.colored_label(egui::Color32::RED, state.lang.t(Key::NotFound));
+            }
+        });
+
+        if let Some(ref path) = state.ffmpeg_path {
+            ui.horizontal(|ui| {
+                ui.label(state.lang.t(Key::FFmpegPath));
+                ui.monospace(path);
+            });
+        }
+
+        if let Some(ref path) = state.ffprobe_path {
+            ui.horizontal(|ui| {
+                ui.label(state.lang.t(Key::FFprobePath));
+                ui.monospace(path);
+            });
+        }
+
+        if let Some(ref version) = state.ffmpeg_version {
+            ui.horizontal(|ui| {
+                ui.label(state.lang.t(Key::Version));
+                ui.label(version);
+            });
+        }
+
+        if ui.button(state.lang.t(Key::Rescan)).clicked() {
+            state.rescan_ffmpeg();
         }
     });
 
     ui.add_space(16.0);
 
+    // About
     ui.group(|ui| {
-        ui.label(state.lang.t(Key::About));
+        ui.strong(state.lang.t(Key::About));
+        ui.add_space(4.0);
         ui.label("Media RS v0.1.0");
         ui.label(state.lang.t(Key::Description));
-        ui.label("Rust + egui");
+        ui.label("Rust + egui + FFmpeg");
     });
 }

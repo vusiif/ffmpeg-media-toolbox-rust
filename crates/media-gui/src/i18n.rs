@@ -90,6 +90,11 @@ pub enum Key {
     FFmpegNotFound,
     FfmpegNotFoundMsg,
     LanguageSwitch,
+    FFmpegPath,
+    FFprobePath,
+    Rescan,
+    CommandPreview,
+    Version,
 }
 
 impl Key {
@@ -150,6 +155,11 @@ impl Key {
             Self::FFmpegNotFound => "FFmpeg not found!",
             Self::FfmpegNotFoundMsg => "Please install FFmpeg or set the path in Settings.",
             Self::LanguageSwitch => "Language:",
+            Self::FFmpegPath => "FFmpeg Path:",
+            Self::FFprobePath => "FFprobe Path:",
+            Self::Rescan => "Rescan",
+            Self::CommandPreview => "Command Preview:",
+            Self::Version => "Version:",
         }
     }
 
@@ -210,6 +220,11 @@ impl Key {
             Self::FFmpegNotFound => "未找到 FFmpeg！",
             Self::FfmpegNotFoundMsg => "请安装 FFmpeg 或在设置中指定路径。",
             Self::LanguageSwitch => "语言：",
+            Self::FFmpegPath => "FFmpeg 路径：",
+            Self::FFprobePath => "FFprobe 路径：",
+            Self::Rescan => "重新扫描",
+            Self::CommandPreview => "命令预览：",
+            Self::Version => "版本：",
         }
     }
 }

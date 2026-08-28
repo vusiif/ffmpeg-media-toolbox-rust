@@ -10,6 +10,9 @@ use crate::i18n::{Lang, Language};
 
 pub struct AppState {
     pub ffmpeg_valid: bool,
+    pub ffmpeg_path: Option<String>,
+    pub ffprobe_path: Option<String>,
+    pub ffmpeg_version: Option<String>,
     pub files: Vec<PathBuf>,
     pub selected_preset: Option<Preset>,
     pub presets: Vec<Preset>,
@@ -51,11 +54,14 @@ impl DisplayJobStatus {
 
 impl AppState {
     pub fn new() -> Self {
-        let ffmpeg_valid = FfmpegLocator::new().is_ok();
         let presets = builtin_presets();
+        let (ffmpeg_valid, ffmpeg_path, ffprobe_path, ffmpeg_version) = detect_ffmpeg();
 
         Self {
             ffmpeg_valid,
+            ffmpeg_path,
+            ffprobe_path,
+            ffmpeg_version,
             files: Vec::new(),
             selected_preset: presets.first().cloned(),
             presets,
@@ -64,6 +70,14 @@ impl AppState {
             jobs: Vec::new(),
             next_display_id: 1,
         }
+    }
+
+    pub fn rescan_ffmpeg(&mut self) {
+        let (valid, path, probe, version) = detect_ffmpeg();
+        self.ffmpeg_valid = valid;
+        self.ffmpeg_path = path;
+        self.ffprobe_path = probe;
+        self.ffmpeg_version = version;
     }
 
     pub fn add_files(&mut self, paths: Vec<PathBuf>) {
@@ -279,4 +293,16 @@ fn detect_system_language() -> Language {
     }
 
     Language::English
+}
+
+fn detect_ffmpeg() -> (bool, Option<String>, Option<String>, Option<String>) {
+    match FfmpegLocator::new() {
+        Ok(locator) => {
+            let ffmpeg_path = Some(locator.ffmpeg_path().display().to_string());
+            let ffprobe_path = Some(locator.ffprobe_path().display().to_string());
+            let version = locator.ffmpeg_version().ok();
+            (true, ffmpeg_path, ffprobe_path, version)
+        }
+        Err(_) => (false, None, None, None),
+    }
 }
